@@ -1,0 +1,71 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "10.0.0.0",
+	"parameters": {
+		"vnetName": { "type": "string" },
+		"subnetName": { "type": "string" },
+		"nsgName": { "type": "string" }
+	},
+	"variables": {
+		"vnetAddressPrefix": "10.10.0.0/16",
+		"subnetPrefix": "10.10.10.0/24"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.Network/networkSecurityGroups",
+			"apiVersion": "2023-01-01",
+			"name": "[parameters('nsgName')]",
+			"location": "australiaeast",
+			"properties": {
+				"securityRules": [
+					{
+						"name": "AllowSSH",
+						"properties": {
+							"priority": 100,
+							"direction": "Inbound",
+							"access": "Allow",
+							"protocol": "Tcp"
+							"sourceAddressPrefix": "*",
+							"sourcePortRange": "*",
+							"destinationAddressPrefix": "10.10.10.0/24",
+							"destinationPortRange": "22"
+						}
+					}
+				]
+			}
+		},
+		{
+			"type": "Microsoft.Network/virtualNetworks",
+			"apiVersion": "2023-01-01",
+			"name": "[parameters('vnetName')]",
+			"location": "australiaeast",
+			"properties": {
+				"addressSpace": {
+					"addressPrefix": ["[variables('vnetAddressPrefix')]"]
+				},
+				"subnets": [
+					{
+						"name": "[parameters('subnetName')]",
+						"properties": {
+							"addressPrefix": "[variables('subnetPrefix')]",
+							"networkSecurityGroup": {
+								"id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
+							}
+						}
+					}
+				]
+			} 
+		}
+	],
+	"outputs": {
+		"subnetId": {
+			"type": "string",
+			"value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]"
+		},
+		"nsgId": {
+			"type": "string",
+			"value": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsgName'))]"
+		}
+	}
+}
+
