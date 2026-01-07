@@ -17,7 +17,9 @@
             "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
             ],
-            "properties": { }
+            "properties": { 
+                "publicAccess": "None"
+            }
         }
     ]
 }
